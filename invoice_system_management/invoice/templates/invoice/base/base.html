@@ -134,6 +134,20 @@
                 </div>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsethree"
+                    aria-expanded="true" aria-controls="collapsethree">
+                    <i class="fa-solid fa-money-check" style="font-size: larger;"></i>
+                    <span>Payments</span>
+                </a>
+                <div id="collapsethree" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{% url 'add_payment' %}">Add</a>
+                        <a class="collapse-item" href="{% url 'view_payment' %}">View</a>
+                    </div>
+                </div>
+            </li>
+
             <!-- Divider -->
             <hr class="sidebar-divider">
 

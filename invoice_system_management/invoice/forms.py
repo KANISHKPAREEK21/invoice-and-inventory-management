@@ -11,7 +11,7 @@ class ProductForm(forms.ModelForm):
         fields = [
             'product_name',
             'product_price',
-            # 'product_unit',
+            'product_unit',
         ]
         widgets = {
             'product_name': forms.TextInput(attrs={
@@ -25,11 +25,11 @@ class ProductForm(forms.ModelForm):
                 'placeholder': 'Enter price of the product',
                 'type': 'number',
             }),
-            # 'product_unit': forms.TextInput(attrs={
-            #     'class': 'form-control',
-            #     'id': 'product_unit',
-            #     'placeholder': 'Enter unit of the product',
-            # }),
+            'product_unit': forms.TextInput(attrs={
+                'class': 'form-control',
+                'id': 'product_unit',
+                'placeholder': 'Enter unit of the per product',
+            }),
         }
 
 
@@ -68,7 +68,7 @@ class InvoiceForm(forms.ModelForm):
             'customer': forms.Select(attrs={
                 'class': 'form-control customer-dropdown',
                 'id': 'invoice_customer',
-                'placeholder': 'Enter name of the customer',
+                'placeholder': 'select name of the customer',
             }),
             'contact': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -108,7 +108,8 @@ class InvoiceDetailForm(forms.ModelForm):
         fields = [
             'product',
             'amount',
-            'price'
+            'price',
+            # 'unit'
         ]
         widgets = {
             'product': forms.Select(attrs={
@@ -118,7 +119,7 @@ class InvoiceDetailForm(forms.ModelForm):
             'amount': forms.TextInput(attrs={
                 'class': 'form-control',
                 'id': 'invoice_detail_amount',
-                'placeholder': '1',
+                # 'placeholder': '1',
                 'type': 'number',
             }),
             'price': forms.TextInput(attrs={
@@ -126,6 +127,11 @@ class InvoiceDetailForm(forms.ModelForm):
                 'id': 'id_form-0-price',
                 # 'placeholder': f'{Product.product_price}',
             }),
+            # 'unit': forms.TextInput(attrs={
+            #     'class': 'form-control',
+            #     'id': 'id_form-0-unit',
+            #     # 'placeholder': f'{Product.product_price}',
+            # }),
         }
     def __init__(self, *args, **kwargs):
         super(InvoiceDetailForm, self).__init__(*args, **kwargs)
@@ -156,6 +162,29 @@ class ExpenseForm(forms.ModelForm):
         cost = models.FloatField(max_length=255)
         is_active = models.BooleanField(default=True)
 
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = [
+            'Bank_name',
+            'Payment_cost'
+        ]
+        widgets = {
+            'bank_name': forms.Select(attrs={
+                'class': 'form-control bank_name-dropdown',
+                'id': 'payment_name',
+                'placeholder': 'Select name of the bank',
+            }),
+            'Payment_cost': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'id': 'Payment_cost',
+                'placeholder': 'Enter amount',
+                'type': 'number',
+            }),
+        }
+        bank = models.BooleanField(default='SBI')
+        cost = models.FloatField(max_length=255)
+        is_active = models.BooleanField(default=True)
 
 # class excelUploadForm(forms.Form):
 #     file = forms.FileField()

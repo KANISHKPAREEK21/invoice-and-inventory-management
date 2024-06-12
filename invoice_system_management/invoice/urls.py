@@ -39,4 +39,7 @@ urlpatterns = [
     path('view_expense/', login_required(views.view_expense), name='view_expense'),
     path('delete_expense/<int:pk>/', login_required(views.delete_expense), name='delete_expense'),
 
+    path('add_payment/', login_required(views.add_payment), name='add_payment'),
+    path('view_payment/', login_required(views.view_payment), name='view_payment'),
+    path('delete_payment/<int:pk>/', login_required(views.delete_payment), name='delete_payment'),
 ]

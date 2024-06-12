@@ -5,7 +5,7 @@ from django.dispatch import receiver
 class Product(models.Model):
     product_name = models.CharField(max_length=255)
     product_price = models.FloatField(default=0)
-    # product_unit = models.CharField(max_length=255)
+    product_unit = models.CharField(max_length=255, default = 1)
     product_is_delete = models.BooleanField(default=False)
 
     def __str__(self):
@@ -48,6 +48,7 @@ class InvoiceDetail(models.Model):
     price = models.FloatField(null=True)
         # Product, on_delete=models.SET_NULL, blank=True, null=True) #Product.product_price
     amount = models.IntegerField(default=1)
+    unit = models.IntegerField(null=True)
     invoicedetail_is_delete = models.BooleanField(default=False)
 
     @property
@@ -67,6 +68,21 @@ class Expense(models.Model):
 
     def __str__(self):
         return str(self.expense_name)
+
+class Payment(models.Model):
+    BANK_CHOICES = [
+            ('SBI', 'State Bank of India'),
+            ('ICICI', 'ICICI Bank'),
+            # Add more banks as needed
+        ]
+
+    Bank_name = models.CharField(max_length=255, choices=BANK_CHOICES, default='SBI')
+    Payment_cost = models.FloatField()
+    date = models.DateField(auto_now_add=True)
+    Payment_is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.Bank_name
 
 '''
 # if self.invoice.gst is True:

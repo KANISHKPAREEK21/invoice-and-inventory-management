@@ -65,7 +65,7 @@ def download_all(request):
         "invoice_comments": [],
         "product_name": [],
         # "product_price": [],
-        # "product_unit": [],
+        "product_unit": [],
         # "product_amount": [], 
         "invoice_total": [],
 
@@ -93,6 +93,7 @@ def download_all(request):
         product = Product.objects.filter(id = product_id)
         for i in product:
             product_name = i.product_name
+            product_unit = i.product_unit
         # invoice = Invoice.objects.get(id=curr.id)
         # product = Product.objects.get(id=curr.product_id)
         # product = Product.objects.filter(id=curr.product_id)
@@ -104,7 +105,7 @@ def download_all(request):
         invoiceAndProduct["invoice_comments"].append(customer_comments)
         invoiceAndProduct["product_name"].append(product_name)
         # invoiceAndProduct["product_price"].append(product.product_price)
-        # # invoiceAndProduct["product_unit"].append(product.product_unit)
+        invoiceAndProduct["product_unit"].append(product_unit)
         # invoiceAndProduct["product_amount"].append(curr.amount)
         invoiceAndProduct["invoice_total"].append(price)
 
@@ -167,7 +168,7 @@ def download_invoice_detail(request , pk):
         "invoice_comments": [],
         "product_name": [],
         "product_price": [],
-        # "product_unit": [],
+        "product_amount": [],
         "product_unit": [],
         "invoice_total": [],
     }
@@ -176,12 +177,15 @@ def download_invoice_detail(request , pk):
     cnt = 0
     for i in invoice_detail:
         product_id = i.product_id
+        unit = i.unit
+
         product = Product.objects.filter(id = product_id)
         # products += product[0].product_name + ', '
         invoiceAndProduct["product_name"].append(product[0].product_name)
         # prices += str(product[0].product_price) + ', '
         invoiceAndProduct["product_price"].append(i.price)
-        invoiceAndProduct["product_unit"].append(i.amount)
+        invoiceAndProduct["product_amount"].append(i.amount)
+        invoiceAndProduct["product_unit"].append(unit)
 
         # product = Product.objects.get(id= invoice_detail.all().values()[0]['product_id'])
         # print(product)
@@ -193,6 +197,7 @@ def download_invoice_detail(request , pk):
             # invoiceAndProduct["invoice_email"].append(invoice.email)
             invoiceAndProduct["invoice_comments"].append(invoice.comments)
             # invoiceAndProduct["product_name"].append(products)
+            # invoiceAndProduct["product_unit"].append(unit)
             # invoiceAndProduct["product_price"].append(prices)
             # invoiceAndProduct["product_amount"].append(invoice_detail.values()[0]['product_id'])
             invoiceAndProduct["invoice_total"].append(invoice.total)
@@ -206,7 +211,7 @@ def download_invoice_detail(request , pk):
             invoiceAndProduct["invoice_comments"].append("")
             # invoiceAndProduct["product_name"].append(products)
             # invoiceAndProduct["product_price"].append(prices)
-            # invoiceAndProduct["product_unit"].append(product.product_unit)
+            # invoiceAndProduct["product_unit"].append("")
             # invoiceAndProduct["product_amount"].append(invoice_detail.values()[0]['product_id'])
             invoiceAndProduct["invoice_total"].append("")
 
@@ -250,9 +255,11 @@ def customer_invoice_download(request , pk):
         "invoice_id":[],
         "invoice_date":[],
         "invoice_total":[],
+        "is_GST_applied":[],
         "product_id":[],
         "product_name":[],
         "product_price":[],
+        "product_amount":[],
         "product_unit":[],
         "customer_total":[]
     }
@@ -272,17 +279,20 @@ def customer_invoice_download(request , pk):
         invoice_id = i.id
         invoice_date = i.date
         invoice_total = i.total
+        gst = i.gst
 
         customer_details["invoice_id"].append(invoice_id)
         customer_details["invoice_date"].append(invoice_date)
         customer_details["invoice_total"].append(invoice_total)
+        customer_details["is_GST_applied"].append(gst)
 
         invoice_detail = InvoiceDetail.objects.filter(invoice_id = invoice_id)
         cnt = 0
         for p in invoice_detail:
             product_id = p.product_id
             product_price = p.price
-            product_unit = p.amount
+            product_amount = p.amount
+            product_unit = p.unit
 
             customer_details["product_id"].append(product_id)
             products = Product.objects.filter(id = product_id)
@@ -290,6 +300,7 @@ def customer_invoice_download(request , pk):
 
             customer_details["product_name"].append(product_name)
             customer_details["product_price"].append(product_price)
+            customer_details["product_amount"].append(product_amount)
             customer_details["product_unit"].append(product_unit)
 
             if p != invoice_detail[len(invoice_detail) - 1]:
@@ -301,6 +312,7 @@ def customer_invoice_download(request , pk):
                 customer_details["invoice_id"].append("")
                 customer_details["invoice_date"].append("")
                 customer_details["invoice_total"].append("")
+                customer_details["is_GST_applied"].append("")
 
 
             customer_details["customer_id"].append("")
@@ -311,10 +323,12 @@ def customer_invoice_download(request , pk):
             customer_details["invoice_id"].append("")
             customer_details["invoice_date"].append("")
             customer_details["invoice_total"].append("")
+            customer_details["is_GST_applied"].append("")
 
             customer_details["product_id"].append("")
             customer_details["product_name"].append("")
             customer_details["product_price"].append("")
+            customer_details["product_amount"].append("")
             customer_details["product_unit"].append("")
 
 
@@ -543,6 +557,7 @@ def create_invoice(request):
                 contact=form.cleaned_data.get("contact"),
                 date=form.cleaned_data.get("date"),
                 gst=form.cleaned_data.get("gst"),
+                comments = form.cleaned_data.get("comments"),
                 # price = form.cleaned_data.get("price")
             )
         if formset.is_valid():
@@ -554,10 +569,11 @@ def create_invoice(request):
                 if product and amount:
                     # Sum each row
                     sum = float(price) * float(amount)
+                    unit = float(product.product_unit) * float(amount)
                     # Sum of total invoice
                     total += sum
                     InvoiceDetail(
-                        invoice=invoice, product=product, amount=amount, price=price
+                        invoice=invoice, product=product, amount=amount, price=price, unit= unit
                     ).save()
             if(invoice.gst == True):
                 total += (0.18) * total 
@@ -941,3 +957,91 @@ def delete_expense(request, pk):
     }
 
     return render(request, "invoice/delete_expense.html", context)
+
+
+@login_required
+def add_payment(request):
+    total_product = Product.objects.filter(product_is_delete=0).count()
+
+    # this is commented
+    total_customer = Customer.objects.filter(customer_is_delete=0).count()
+    # this is commented
+
+    total_invoice = Invoice.objects.filter(invoice_is_delete=0).count()
+    total_income = getTotalIncome()
+
+    payment = PaymentForm()
+    if request.method == "POST":
+        payment = PaymentForm(request.POST)
+        if payment.is_valid():
+                    payment.save()
+                    return redirect("view_payment")
+    context = {
+        "total_product": total_product,
+
+        # this is commented
+        "total_customer": total_customer,
+        # this is commented
+
+        "total_invoice": total_invoice,
+        "total_income": total_income,
+        "payment": payment,
+    }
+
+    return render(request, "invoice/add_payment.html", context)
+
+@login_required
+def view_payment(request):
+    total = 0
+    total_product = Product.objects.filter(product_is_delete=0).count()
+
+        # this is commented
+    total_customer = Customer.objects.filter(customer_is_delete=0).count()
+        # this is commented
+    total_invoice = Invoice.objects.filter(invoice_is_delete=0).count()
+    total_income = getTotalIncome()
+    payment = Payment.objects.filter(Payment_is_active=True).all().values()
+    for i in Payment.objects.filter(Payment_is_active=True).values():
+        total = total + i['Payment_cost']
+
+    print(total)
+    context = {
+        "total_product": total_product,
+        # this is commented
+        "total_customer": total_customer,
+        # this is commented
+        "total_invoice": total_invoice,
+        "total_income": total_income,
+        "payment": payment,
+        "total":total,
+    }
+    return render(request, "invoice/view_payment.html", context)
+
+@login_required
+def delete_payment(request, pk):
+    total_product = Product.objects.filter(product_is_delete=0).count()
+
+        # this is commented
+    total_customer = Customer.objects.filter(customer_is_delete=0).count()
+        # this is commented
+    total_invoice = Invoice.objects.filter(invoice_is_delete=0).count()
+    total_income = getTotalIncome()
+
+    payment = Payment.objects.get(id=pk)
+
+    if request.method == "POST":
+        payment.Payment_is_active = False
+        payment.save()
+        return redirect("view_payment")
+
+    context = {
+        "total_product": total_product,
+        # this is commented
+        "total_customer": total_customer,
+        # this is commented
+        "total_invoice": total_invoice,
+        "total_income": total_income,
+        "payment": payment,
+    }
+
+    return render(request, "invoice/delete_payment.html", context)
